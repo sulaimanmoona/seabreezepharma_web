@@ -7,7 +7,7 @@ export const site = {
   address: "81/1 หมู่1 ตำบลแม่น้ำ อำเภอเกาะสมุย จังหวัดสุราษฏธานี 84330",
   phone: "077-963-198",
   mobile: "085-905-5881",
-  email: "contact@seabreezepharma.com",
+  email: "seabreeze.pharma@gmail.com",
   line: { id: "@seabreezepharma", url: "https://line.me/R/ti/p/@seabreezepharma" },
   facebook: { name: "Seabreeze Pharma", url: "https://www.facebook.com/seabreezepharma" },
   hours: [
