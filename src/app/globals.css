@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-prompt), ui-sans-serif, system-ui, sans-serif;
+
+  /* Sea palette */
+  --color-sea-50: #effcfc;
+  --color-sea-100: #d5f5f6;
+  --color-sea-200: #afeaee;
+  --color-sea-300: #78d9e1;
+  --color-sea-400: #3abfcd;
+  --color-sea-500: #1ea3b3;
+  --color-sea-600: #1b8397;
+  --color-sea-700: #1c6a7b;
+  --color-sea-800: #1f5766;
+  --color-sea-900: #0f3a47;
+  --color-sea-950: #082530;
+
+  /* Brand colours taken from the logo */
+  --color-ocean: #1e73dc;
+  --color-ocean-light: #2795e8;
+  --color-mint: #2bb07a;
+  --color-mint-light: #3dc088;
+
+  --color-sand: #f6fbfb;
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-sand);
+  color: var(--color-sea-950);
+}
+
+/* Gentle ocean gradient used on hero sections */
+.bg-ocean-gradient {
+  background:
+    radial-gradient(1200px 500px at 85% -10%, rgb(61 192 136 / 0.35), transparent 60%),
+    radial-gradient(900px 500px at 0% 0%, rgb(39 149 232 / 0.45), transparent 60%),
+    linear-gradient(160deg, #1e73dc 0%, #1b8397 55%, #1ea3b3 100%);
+}
+
+@keyframes wave-drift {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.animate-wave {
+  animation: wave-drift 18s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-wave { animation: none; }
+}
