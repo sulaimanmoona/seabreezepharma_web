@@ -1,8 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { AlertCircle, Barcode, ChevronLeft, ChevronRight, PackageSearch, Search, X } from "lucide-react";
+import {
+  AlertCircle,
+  Barcode,
+  ChevronLeft,
+  ChevronRight,
+  PackageSearch,
+  ScanBarcode,
+  Search,
+  X,
+} from "lucide-react";
+import BarcodeScanner, { canUseCamera } from "./BarcodeScanner";
+
+const noSubscribe = () => () => {};
 
 type Product = {
   id: string;
@@ -45,6 +57,10 @@ export default function PriceSearch() {
   const data = fetched?.data ?? null; // keep previous results visible while loading
   const error = loading ? null : (fetched?.error ?? null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // ปุ่มกล้องแสดงเฉพาะเครื่องที่ใช้กล้องได้ (false ตอน render ฝั่ง server)
+  const cameraAvailable = useSyncExternalStore(noSubscribe, canUseCamera, () => false);
+  const [scanning, setScanning] = useState(false);
 
   function updateUrl(q: string, page = 1) {
     const params = new URLSearchParams();
@@ -110,7 +126,7 @@ export default function PriceSearch() {
           autoFocus
           placeholder="พิมพ์ชื่อยา หรือสแกน / พิมพ์บาร์โค้ด"
           aria-label="ค้นหาชื่อยาหรือบาร์โค้ด"
-          className="h-14 w-full rounded-2xl border-2 border-sea-200 bg-white pl-12 pr-28 text-lg shadow-sm outline-none transition placeholder:text-sea-400 focus:border-sea-500 focus:ring-4 focus:ring-sea-200/60 [&::-webkit-search-cancel-button]:hidden"
+          className={`h-14 w-full rounded-2xl border-2 border-sea-200 bg-white pl-12 ${cameraAvailable ? "pr-40" : "pr-28"} text-lg shadow-sm outline-none transition placeholder:text-sea-400 focus:border-sea-500 focus:ring-4 focus:ring-sea-200/60 [&::-webkit-search-cancel-button]:hidden`}
         />
         <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
           {input && (
@@ -127,6 +143,17 @@ export default function PriceSearch() {
               <X size={18} />
             </button>
           )}
+          {cameraAvailable && (
+            <button
+              type="button"
+              aria-label="สแกนบาร์โค้ดด้วยกล้อง"
+              title="สแกนบาร์โค้ดด้วยกล้อง"
+              onClick={() => setScanning(true)}
+              className="rounded-xl border-2 border-sea-200 p-1.5 text-ocean hover:bg-sea-50"
+            >
+              <ScanBarcode size={24} />
+            </button>
+          )}
           <button
             type="submit"
             className="rounded-xl bg-linear-to-r from-ocean to-sea-500 px-4 py-2 font-medium text-white hover:opacity-90"
@@ -136,8 +163,22 @@ export default function PriceSearch() {
         </div>
       </form>
       <p className="mt-2 flex items-center gap-1.5 text-sm text-sea-600">
-        <Barcode size={16} /> รองรับเครื่องสแกนบาร์โค้ด — สแกนได้ทันทีเมื่อเคอร์เซอร์อยู่ในช่องค้นหา
+        <Barcode size={16} className="shrink-0" />
+        {cameraAvailable
+          ? "กดปุ่มกล้องเพื่อสแกนบาร์โค้ดบนกล่องยา หรือใช้เครื่องสแกนบาร์โค้ดได้เลย"
+          : "รองรับเครื่องสแกนบาร์โค้ด — สแกนได้ทันทีเมื่อเคอร์เซอร์อยู่ในช่องค้นหา"}
       </p>
+
+      {scanning && (
+        <BarcodeScanner
+          onClose={() => setScanning(false)}
+          onDetected={(code) => {
+            setScanning(false);
+            setInput(code);
+            updateUrl(code);
+          }}
+        />
+      )}
 
       {/* Summary */}
       <div className="mt-6 flex min-h-6 items-center justify-between text-sm text-sea-700">

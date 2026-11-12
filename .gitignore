@@ -42,6 +42,9 @@ yarn-error.log*
 /.wrangler/
 .dev.vars*
 
+# barcode reader wasm, copied from node_modules by scripts/copy-zxing-wasm.mjs
+/public/zxing/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
