@@ -69,7 +69,9 @@ export default function PriceSearch() {
     const params = new URLSearchParams({ q: urlQuery, page: String(urlPage) });
     fetch(`/api/products?${params}`, { signal: controller.signal })
       .then(async (res) => {
-        const json = await res.json().catch(() => ({}));
+        const json = (await res.json().catch(() => ({}))) as Partial<Result> & {
+          error?: string;
+        };
         if (!res.ok) throw new Error(json.error ?? "เกิดข้อผิดพลาด");
         setFetched({ key, data: json as Result, error: null });
       })

@@ -1,0 +1,29 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "seabreeze-pharma",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      // ต้องตรงกับ "name" ด้านบน
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "seabreeze-pharma"
+    }
+  ],
+  "images": {
+    // ใช้ย่อ/แปลงรูปของ next/image
+    "binding": "IMAGES"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "seabreezepharma",
+      "database_id": "93552b22-eabe-48ce-9259-ea43da1c5108"
+    }
+  ]
+}

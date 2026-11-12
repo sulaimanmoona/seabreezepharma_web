@@ -1,6 +1,13 @@
 import "server-only";
-import type { RowDataPacket } from "mysql2";
-import { getPool } from "./db";
+import { getDb } from "./db";
+
+type ProductRow = {
+  product_id: string;
+  product_bname: string | null;
+  product_unit_name: string | null;
+  product_barcode: string | null;
+  product_sale_price: number | null;
+};
 
 export type Product = {
   id: string;
@@ -37,21 +44,17 @@ export async function searchProducts(
 
   if (q) {
     const like = escapeLike(q);
-    conditions.push("product_bname LIKE ?", "product_id = ?");
+    // SQLite has no default LIKE escape character, so declare it.
+    conditions.push("product_bname LIKE ? ESCAPE '\\'", "product_id = ?");
     params.push(`%${like}%`, q);
     if (/^\d+$/.test(q)) {
-      conditions.push("product_barcode LIKE ?");
+      conditions.push("product_barcode LIKE ? ESCAPE '\\'");
       params.push(`${like}%`);
     }
   }
 
   const where = conditions.length ? `WHERE ${conditions.join(" OR ")}` : "";
-  const pool = getPool();
-
-  const [countRows] = await pool.query<RowDataPacket[]>(
-    `SELECT COUNT(*) AS total FROM tb_product ${where}`,
-    params,
-  );
+  const db = getDb();
 
   // Exact barcode matches first, then alphabetical by name.
   const orderBy = q
@@ -59,12 +62,19 @@ export async function searchProducts(
     : "ORDER BY product_bname ASC";
   const orderParams = q ? [q] : [];
 
-  const [rows] = await pool.query<RowDataPacket[]>(
-    `SELECT product_id, product_bname, product_unit_name, product_barcode, product_sale_price
-       FROM tb_product ${where} ${orderBy}
-       LIMIT ? OFFSET ?`,
-    [...params, ...orderParams, PAGE_SIZE, offset],
-  );
+  // One round trip for both queries.
+  const [countResult, rowsResult] = await db.batch([
+    db.prepare(`SELECT COUNT(*) AS total FROM tb_product ${where}`).bind(...params),
+    db
+      .prepare(
+        `SELECT product_id, product_bname, product_unit_name, product_barcode, product_sale_price
+           FROM tb_product ${where} ${orderBy}
+           LIMIT ? OFFSET ?`,
+      )
+      .bind(...params, ...orderParams, PAGE_SIZE, offset),
+  ]);
+  const countRows = countResult.results as { total: number }[];
+  const rows = rowsResult.results as ProductRow[];
 
   return {
     items: rows.map((r) => ({

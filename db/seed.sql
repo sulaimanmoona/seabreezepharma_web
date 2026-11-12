@@ -1,8 +1,9 @@
 -- ข้อมูลยาตัวอย่างสำหรับทดสอบ (product_id ขึ้นต้นด้วย DEMO-)
 -- ลบภายหลังได้ด้วย: DELETE FROM tb_product WHERE product_id LIKE 'DEMO-%';
-SET NAMES utf8;
+-- ใส่ข้อมูล:  npx wrangler d1 execute seabreezepharma --local --file=db/seed.sql
+--   (บน Cloudflare จริงใช้ --remote แทน --local)
 
-INSERT IGNORE INTO tb_product
+INSERT OR IGNORE INTO tb_product
   (product_id, product_bname, product_unit_name, product_barcode, product_sale_price)
 VALUES
   ('DEMO-001', 'Paracetamol 500 mg (พาราเซตามอล)', 'แผง', '8850001000017', 15.00),
